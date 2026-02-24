@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="ru" class="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chess Achievements</title>
+  <script>
+    // Apply theme before page renders to avoid flash
+    if (localStorage.getItem('chess_theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-950 min-h-screen transition-colors duration-200">
+
+  <!-- Navigation -->
+  <nav class="bg-indigo-600 text-white shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-2 flex-wrap">
+      <span class="font-bold text-lg mr-4">♟ Chess Achievements</span>
+      <a href="#/students"      class="nav-link px-3 py-1 rounded hover:bg-indigo-500 transition">Ученики</a>
+      <a href="#/achievements"  class="nav-link px-3 py-1 rounded hover:bg-indigo-500 transition">Медали</a>
+      <a href="#/import-export" class="nav-link px-3 py-1 rounded hover:bg-indigo-500 transition">Импорт / Экспорт</a>
+      <button id="btn-theme" class="ml-auto px-3 py-1 rounded hover:bg-indigo-500 transition text-lg" title="Тема">🌙</button>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main id="app" class="max-w-6xl mx-auto px-4 py-8"></main>
+
+  <!-- Modal overlay -->
+  <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50">
+    <div id="modal-box" class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 p-6"></div>
+  </div>
+
+  <script src="dist/bundle.js"></script>
+</body>
+</html>
