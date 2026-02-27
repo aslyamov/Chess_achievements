@@ -114,21 +114,21 @@ function buildMedalModalHtml(title: string, prefill: Partial<Achievement> = {}):
              bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100
              focus:outline-none focus:ring-2 focus:ring-indigo-400" />
 
-    <div class="flex items-center gap-2 mb-1">
+    <div class="flex items-center gap-2 mb-2">
       <div id="modal-img-preview" class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex-shrink-0
         flex items-center justify-center text-xl overflow-hidden">${previewHtml}</div>
-      <input id="modal-ach-img" type="text" placeholder="URL картинки (или выберите ниже)"
+      <input id="modal-ach-img" type="text" placeholder="URL картинки"
         value="${escHtml(prefill.imageUrl ?? '')}"
         class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2
                bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100
                focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+      <button id="btn-library-toggle" type="button" title="Библиотека иконок"
+        class="flex-shrink-0 w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600
+               bg-gray-50 dark:bg-gray-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/40
+               hover:border-indigo-400 transition flex items-center justify-center text-lg">
+        🎨
+      </button>
     </div>
-
-    <button id="btn-library-toggle" type="button"
-      class="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400
-             hover:underline mb-2 mt-1">
-      <span id="library-arrow">▶</span> Библиотека иконок (${ICON_LIBRARY.length} штук)
-    </button>
 
     <div id="icon-library" class="hidden mb-3 border border-gray-200 dark:border-gray-700 rounded-xl p-3">
       <div class="flex items-center gap-1.5 mb-2 flex-wrap">
@@ -188,22 +188,8 @@ function setupMedalModalHandlers(onSave: (name: string, imageUrl: string, descri
 
   imgInp.addEventListener('input', () => updatePreview(imgInp.value.trim()));
 
-  document.querySelectorAll('.preset-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const url = (btn as HTMLElement).dataset.url!;
-      imgInp.value = url;
-      updatePreview(url);
-      imgInp.classList.remove('border-red-400');
-      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('border-indigo-500'));
-      btn.classList.add('border-indigo-500');
-    });
-  });
-
   document.getElementById('btn-library-toggle')?.addEventListener('click', () => {
-    const lib   = document.getElementById('icon-library')!;
-    const arrow = document.getElementById('library-arrow')!;
-    const hidden = lib.classList.toggle('hidden');
-    arrow.textContent = hidden ? '▶' : '▼';
+    document.getElementById('icon-library')!.classList.toggle('hidden');
   });
 
   document.querySelectorAll('.color-btn').forEach(btn => {
