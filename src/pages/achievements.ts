@@ -323,7 +323,7 @@ export function renderAchievements(): void {
             <div class="px-5 py-6 text-gray-400 dark:text-gray-500 text-sm">В категории пока нет медалей.</div>
           ` : `
             <div class="divide-y divide-gray-100 dark:divide-gray-700">
-              ${catAchievements.map(ach => `
+              ${catAchievements.map((ach, idx) => `
                 <div class="flex items-center gap-4 px-5 py-3">
                   <img src="${escHtml(ach.imageUrl)}" alt=""
                     class="w-12 h-12 object-contain rounded-lg bg-gray-100 dark:bg-gray-700 flex-shrink-0 p-1"
@@ -333,6 +333,15 @@ export function renderAchievements(): void {
                     ${ach.description ? `<div class="text-sm text-gray-500 dark:text-gray-400 truncate">${escHtml(ach.description)}</div>` : ''}
                   </div>
                   <div class="flex items-center gap-1 flex-shrink-0">
+                    <button class="btn-move-up p-1.5 rounded-lg transition
+                      ${idx === 0 ? 'text-gray-200 dark:text-gray-700 cursor-default' : 'text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'}"
+                      data-id="${ach.id}" data-cat="${cat.id}" title="Переместить вверх" ${idx === 0 ? 'disabled' : ''}>↑</button>
+                    <button class="btn-move-down p-1.5 rounded-lg transition
+                      ${idx === catAchievements.length - 1 ? 'text-gray-200 dark:text-gray-700 cursor-default' : 'text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30'}"
+                      data-id="${ach.id}" data-cat="${cat.id}" title="Переместить вниз" ${idx === catAchievements.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button class="btn-duplicate-achievement p-1.5 rounded-lg text-gray-400 hover:text-green-600
+                      dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition"
+                      data-id="${ach.id}" title="Дублировать">📋</button>
                     <button class="btn-edit-achievement p-1.5 rounded-lg text-gray-400 hover:text-indigo-600
                       dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
                       data-id="${ach.id}" title="Редактировать">✏️</button>
@@ -447,6 +456,52 @@ export function renderAchievements(): void {
         closeModal();
         renderAchievements();
       });
+    });
+  });
+
+  app.querySelectorAll('.btn-move-up').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = (btn as HTMLElement).dataset.id!;
+      const catId = (btn as HTMLElement).dataset.cat!;
+      const d = loadData();
+      const catItems = d.achievements.filter(a => a.categoryId === catId);
+      const idx = catItems.findIndex(a => a.id === id);
+      if (idx <= 0) return;
+      const globalA = d.achievements.indexOf(catItems[idx]);
+      const globalB = d.achievements.indexOf(catItems[idx - 1]);
+      [d.achievements[globalA], d.achievements[globalB]] = [d.achievements[globalB], d.achievements[globalA]];
+      saveData(d);
+      renderAchievements();
+    });
+  });
+
+  app.querySelectorAll('.btn-move-down').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = (btn as HTMLElement).dataset.id!;
+      const catId = (btn as HTMLElement).dataset.cat!;
+      const d = loadData();
+      const catItems = d.achievements.filter(a => a.categoryId === catId);
+      const idx = catItems.findIndex(a => a.id === id);
+      if (idx < 0 || idx >= catItems.length - 1) return;
+      const globalA = d.achievements.indexOf(catItems[idx]);
+      const globalB = d.achievements.indexOf(catItems[idx + 1]);
+      [d.achievements[globalA], d.achievements[globalB]] = [d.achievements[globalB], d.achievements[globalA]];
+      saveData(d);
+      renderAchievements();
+    });
+  });
+
+  app.querySelectorAll('.btn-duplicate-achievement').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = (btn as HTMLElement).dataset.id!;
+      const d = loadData();
+      const ach = d.achievements.find(a => a.id === id);
+      if (!ach) return;
+      const copy = { ...ach, id: uid(), name: ach.name + ' (копия)' };
+      const idx = d.achievements.indexOf(ach);
+      d.achievements.splice(idx + 1, 0, copy);
+      saveData(d);
+      renderAchievements();
     });
   });
 }
