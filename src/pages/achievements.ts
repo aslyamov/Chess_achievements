@@ -2,15 +2,6 @@ import { loadData, saveData, uid } from '../storage';
 import { showModal, closeModal } from '../modal';
 import type { Achievement, AchievementCategory } from '../types';
 
-const PRESET_MEDALS = [
-  { url: 'img/medal-gold-1.svg',   label: 'Золото 1' },
-  { url: 'img/medal-gold-2.svg',   label: 'Золото 2' },
-  { url: 'img/medal-silver-1.svg', label: 'Серебро 1' },
-  { url: 'img/medal-silver-2.svg', label: 'Серебро 2' },
-  { url: 'img/medal-bronze-1.svg', label: 'Бронза 1' },
-  { url: 'img/medal-bronze-2.svg', label: 'Бронза 2' },
-];
-
 const ICON_COLORS = [
   { hex: '#f59e0b', label: 'Золото' },
   { hex: '#94a3b8', label: 'Серебро' },
@@ -122,17 +113,6 @@ function buildMedalModalHtml(title: string, prefill: Partial<Achievement> = {}):
       class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 mb-3
              bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100
              focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-
-    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Готовые изображения</p>
-    <div class="flex gap-2 flex-wrap mb-3">
-      ${PRESET_MEDALS.map(p => `
-        <button type="button" class="preset-btn p-1 rounded-lg border-2 border-transparent
-          hover:border-indigo-400 transition bg-gray-50 dark:bg-gray-700"
-          data-url="${p.url}" title="${p.label}">
-          <img src="${p.url}" class="w-9 h-9 object-contain" alt="${p.label}" />
-        </button>
-      `).join('')}
-    </div>
 
     <div class="flex items-center gap-2 mb-1">
       <div id="modal-img-preview" class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex-shrink-0
