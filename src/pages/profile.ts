@@ -1,5 +1,6 @@
 ﻿import { loadData } from '../storage';
 import { navigate } from '../router';
+import { openAssignModal } from '../assignModal';
 
 type Filter = 'all' | 'year' | 'month' | 'week' | 'day';
 
@@ -71,9 +72,15 @@ export function renderProfile(params: Record<string, string>): void {
           <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">${escHtml(student.name)}</h1>
           <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Добавлен: ${formatDate(student.createdAt)}</p>
         </div>
-        <div class="text-right">
-          <div class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">${totalCount}</div>
-          <div class="text-xs text-gray-500 dark:text-gray-400">медалей за период</div>
+        <div class="flex items-start gap-3">
+          <button id="btn-assign-medal"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition text-sm flex items-center gap-1.5">
+            🏆 Выдать медаль
+          </button>
+          <div class="text-right">
+            <div class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">${totalCount}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">медалей за период</div>
+          </div>
         </div>
       </div>
 
@@ -127,6 +134,10 @@ export function renderProfile(params: Record<string, string>): void {
   `;
 
   document.getElementById('btn-back')?.addEventListener('click', () => navigate('/students'));
+
+  document.getElementById('btn-assign-medal')?.addEventListener('click', () => {
+    openAssignModal(id, () => renderProfile(params));
+  });
 
   app.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {

@@ -1,6 +1,7 @@
 ﻿import { loadData, saveData, uid, getStudentView, setStudentView } from '../storage';
 import { navigate } from '../router';
 import { showModal, closeModal } from '../modal';
+import { openAssignModal } from '../assignModal';
 
 export function renderStudents(): void {
   const app = document.getElementById('app')!;
@@ -116,102 +117,8 @@ export function renderStudents(): void {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const studentId = (btn as HTMLElement).dataset.id!;
-      openAssignModal(studentId);
+      openAssignModal(studentId, () => renderStudents());
     });
-  });
-}
-
-function openAssignModal(studentId: string) {
-  const data = loadData();
-  const student = data.students.find(s => s.id === studentId);
-  if (!student) return;
-
-  const today = new Date().toISOString().slice(0, 10);
-  const achOptions = data.categories.map(cat => {
-    const catAchs = data.achievements.filter(a => a.categoryId === cat.id);
-    if (catAchs.length === 0) return '';
-    return `<optgroup label="${escHtml(cat.name)}">
-      ${catAchs.map(a => `<option value="${a.id}">${escHtml(a.name)}</option>`).join('')}
-    </optgroup>`;
-  }).join('');
-
-  if (!achOptions.trim()) {
-    showModal(`
-      <h2 class="text-xl font-bold mb-3 text-gray-800 dark:text-gray-100">Нет медалей</h2>
-      <p class="text-gray-600 dark:text-gray-300 mb-5">Сначала добавьте медали в разделе «Медали».</p>
-      <div class="flex justify-end">
-        <button id="modal-cancel" class="px-4 py-2 rounded-lg border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200 transition">Закрыть</button>
-      </div>
-    `);
-    document.getElementById('modal-cancel')?.addEventListener('click', closeModal);
-    return;
-  }
-
-  showModal(`
-    <h2 class="text-xl font-bold mb-1 text-gray-800 dark:text-gray-100">Выдать медаль</h2>
-    <p class="text-sm text-indigo-600 dark:text-indigo-400 font-medium mb-4">${escHtml(student.name)}</p>
-
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Медаль</label>
-    <select id="modal-ach-sel"
-      class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 mb-3
-             bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100
-             focus:outline-none focus:ring-2 focus:ring-indigo-400">
-      <option value="">— выберите медаль —</option>
-      ${achOptions}
-    </select>
-
-    <div id="modal-ach-preview" class="hidden mb-3">
-      <div class="flex items-center gap-3 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg p-2">
-        <img id="modal-preview-img" src="" alt="" class="w-10 h-10 object-cover rounded-lg bg-gray-200"
-          onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><text y=%2228%22 font-size=%2228%22>🏅</text></svg>'" />
-        <span id="modal-preview-name" class="text-sm font-medium text-indigo-800 dark:text-indigo-200"></span>
-      </div>
-    </div>
-
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Дата</label>
-    <input id="modal-ach-date" type="date" value="${today}"
-      class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 mb-5
-             bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100
-             focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-
-    <div id="modal-assign-msg" class="mb-3 hidden"></div>
-
-    <div class="flex gap-3 justify-end">
-      <button id="modal-cancel" class="px-4 py-2 rounded-lg border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-200 transition">Отмена</button>
-      <button id="modal-assign-save" class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition">Выдать</button>
-    </div>
-  `);
-
-  document.getElementById('modal-cancel')?.addEventListener('click', closeModal);
-
-  const selAch = document.getElementById('modal-ach-sel') as HTMLSelectElement;
-  selAch.addEventListener('change', () => {
-    const achId = selAch.value;
-    const preview = document.getElementById('modal-ach-preview')!;
-    if (!achId) { preview.classList.add('hidden'); return; }
-    const d = loadData();
-    const ach = d.achievements.find(a => a.id === achId);
-    if (!ach) return;
-    (document.getElementById('modal-preview-img') as HTMLImageElement).src = ach.imageUrl;
-    document.getElementById('modal-preview-name')!.textContent = ach.name;
-    preview.classList.remove('hidden');
-  });
-
-  document.getElementById('modal-assign-save')?.addEventListener('click', () => {
-    const achievementId = selAch.value;
-    const grantedAt = (document.getElementById('modal-ach-date') as HTMLInputElement).value;
-    const msgEl = document.getElementById('modal-assign-msg')!;
-    if (!achievementId) {
-      msgEl.className = 'mb-3 px-3 py-2 rounded-lg text-sm bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300';
-      msgEl.textContent = 'Выберите медаль';
-      msgEl.classList.remove('hidden');
-      return;
-    }
-    const d = loadData();
-    d.studentAchievements.push({ id: uid(), studentId, achievementId, grantedAt });
-    saveData(d);
-    closeModal();
-    renderStudents();
   });
 }
 
