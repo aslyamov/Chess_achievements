@@ -3,10 +3,35 @@ import { navigate } from '../router';
 import { showModal, closeModal } from '../modal';
 import { openAssignModal } from '../assignModal';
 
+type SortCol = 'name' | 'medals' | 'date';
+type SortDir = 'asc' | 'desc';
+
+let sortCol: SortCol = 'name';
+let sortDir: SortDir = 'asc';
+
+function sortIcon(col: SortCol): string {
+  if (sortCol !== col) return '<span class="text-gray-300 dark:text-gray-600">⇅</span>';
+  return sortDir === 'asc' ? '▲' : '▼';
+}
+
 export function renderStudents(): void {
   const app = document.getElementById('app')!;
   const data = loadData();
   const view = getStudentView();
+
+  // Sort students
+  const sorted = [...data.students].sort((a, b) => {
+    let cmp = 0;
+    if (sortCol === 'name')   cmp = a.name.localeCompare(b.name, 'ru');
+    if (sortCol === 'date')   cmp = a.createdAt.localeCompare(b.createdAt);
+    if (sortCol === 'medals') {
+      const ca = data.studentAchievements.filter(sa => sa.studentId === a.id).length;
+      const cb = data.studentAchievements.filter(sa => sa.studentId === b.id).length;
+      cmp = ca - cb;
+    }
+    return sortDir === 'asc' ? cmp : -cmp;
+  });
+  const sortedData = { ...data, students: sorted };
 
   app.innerHTML = `
     <div class="flex items-center justify-between mb-6 gap-3 flex-wrap">
@@ -37,7 +62,7 @@ export function renderStudents(): void {
         <div class="text-5xl mb-4">♟</div>
         <p class="text-lg">Пока нет учеников. Добавьте первого!</p>
       </div>
-    ` : view === 'cards' ? renderCards(data) : renderTable(data)}
+    ` : view === 'cards' ? renderCards(sortedData) : renderTable(sortedData)}
   `;
 
   // View toggle handlers
@@ -112,6 +137,20 @@ export function renderStudents(): void {
     });
   });
 
+  // Sort header buttons
+  app.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const col = (btn as HTMLElement).dataset.col as SortCol;
+      if (sortCol === col) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortCol = col;
+        sortDir = 'asc';
+      }
+      renderStudents();
+    });
+  });
+
   // Quick assign buttons
   app.querySelectorAll('.btn-assign').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -155,9 +194,21 @@ function renderTable(data: ReturnType<typeof loadData>): string {
       <table class="w-full text-sm">
         <thead>
           <tr class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-            <th class="text-left px-5 py-3 font-semibold text-gray-600 dark:text-gray-300">Имя</th>
-            <th class="text-center px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Медалей</th>
-            <th class="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 hidden sm:table-cell">Добавлен</th>
+            <th class="text-left px-5 py-3">
+              <button class="sort-btn flex items-center gap-1 font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition" data-col="name">
+                Имя ${sortIcon('name')}
+              </button>
+            </th>
+            <th class="text-center px-4 py-3">
+              <button class="sort-btn flex items-center gap-1 font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition mx-auto" data-col="medals">
+                Медалей ${sortIcon('medals')}
+              </button>
+            </th>
+            <th class="text-left px-4 py-3 hidden sm:table-cell">
+              <button class="sort-btn flex items-center gap-1 font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition" data-col="date">
+                Добавлен ${sortIcon('date')}
+              </button>
+            </th>
             <th class="px-4 py-3"></th>
           </tr>
         </thead>
